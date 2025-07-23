@@ -70,13 +70,13 @@ export const CardRecipe = ({ food }) => {
   });
 
   return (
-    <Card.Root width={{ b: "100%", md: "25%", lg: "20%"}}>
-      <Card.Body gap={4}>
+    <Card.Root width={"sm"} boxShadow={"md"} borderRadius={"lg"} overflow={"hidden"}>
+      <Card.Body>
         <Image
           src={food[0].recipe.image}
           alt={food[0].recipe.label}
           width={"100%"}
-          height={"auto"}
+          height={"25vh"}
         />
         <Card.Title>{food[0].recipe.label}</Card.Title>
         {dietLabelsTags}
