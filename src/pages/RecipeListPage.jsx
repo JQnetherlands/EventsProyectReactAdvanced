@@ -62,7 +62,7 @@ export const RecipeListPage = ({clickFn}) => {
           </ButtonGroup>
         </VStack>
       </Center>
-      <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} gap={20}>
+      <SimpleGrid columns={{ base: 1, sm: 1, md: 2, lg: 3, xl: 3 }} gap={20}>
         {arrayCards.length === 0 ? <Text>No recipes found</Text> : arrayCards}
       </SimpleGrid>
     </>

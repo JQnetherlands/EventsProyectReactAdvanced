@@ -59,10 +59,10 @@ export const RecipePage = ({ items, clickFn }) => {
   const renderTotalNutrients = (data) => (
     <Grid templateColumns={{ base: "1fr", sm: "100px 1fr" }} gap={2}>
       {data.map((e, i) => (
-        <>
+        <div key={`nutrient-${i}`} >
           <GridItem key={`qty-${i}`}>{e.quantity.toFixed(0)} {e.unit}</GridItem>
           <GridItem key={`label-${i}`}>{e.label}</GridItem>
-        </>
+        </div>
       ))}
     </Grid>
   );
