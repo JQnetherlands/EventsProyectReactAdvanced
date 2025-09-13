@@ -8,9 +8,12 @@ import {
   AspectRatio,
   LinkBox,
   LinkOverlay,
+  Button,
 } from "@chakra-ui/react";
+import { useState } from "react";
+import { AddEventDialog } from "@/components/AddEventDialog";
 import { useLoaderData } from "react-router-dom";
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink } from "react-router-dom";
 export const loader = async function getEventList() {
   const [fetchEventsResponse, fetchCategories] = await Promise.all([
     fetch("http://localhost:3000/events"),
@@ -34,6 +37,7 @@ export const loader = async function getEventList() {
 
 export const EventsPage = () => {
   const { events, categories } = useLoaderData();
+  const [isOpen, setIsOpen] = useState(false);
   console.log(events, categories);
   const renderEvents = events.map((event) => {
     return (
@@ -58,7 +62,9 @@ export const EventsPage = () => {
         </AspectRatio>
         <Box p={4}>
           <Heading as={"h3"} size={"sm"} color={"gray.700"}>
-            <LinkOverlay as={RouterLink} to={`/event/${event.id}`} >{event.title}</LinkOverlay>
+            <LinkOverlay as={RouterLink} to={`/event/${event.id}`}>
+              {event.title}
+            </LinkOverlay>
           </Heading>
           <Text fontSize={{ base: "sm", md: "md" }} color={"gray.600"}>
             {event.description}
@@ -95,6 +101,12 @@ export const EventsPage = () => {
       <Heading size={"md"} textAlign={"center"} my={2}>
         List of events
       </Heading>
+
+      <Button colorPalette={"teal"} onClick={() => setIsOpen(true)}>
+        {" "}
+        ➕ Add Event{" "}
+      </Button>
+      <AddEventDialog isOpen={isOpen} setIsOpen={setIsOpen} />
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4} w={"full"}>
         {renderEvents}
       </SimpleGrid>
