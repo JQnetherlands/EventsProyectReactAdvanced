@@ -1,7 +1,8 @@
 import { HStack, Link as ChakraLink, Box } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export const Navigation = () => {
+  const location = useLocation();
   return (
     <Box
       position={"sticky"}
@@ -21,10 +22,7 @@ export const Navigation = () => {
           fontWeight={"bold"}
           color={location.pathname === "/" ? "teal.500" : "black"}
         >
-          Events
-        </ChakraLink>
-        <ChakraLink as={Link} to="/event/1" fontWeight={"bold"}>
-          Event
+          {location.pathname === "/" ? "Events" : "Back to Events"}
         </ChakraLink>
       </HStack>
     </Box>

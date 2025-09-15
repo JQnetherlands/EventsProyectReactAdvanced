@@ -5,45 +5,41 @@ import {
   Input,
   VStack,
   Field,
-  CloseButton,
-  useBreakpointValue,
   Fieldset,
   CheckboxGroup,
   Checkbox,
   Text,
   HStack,
+  useBreakpointValue,
+  CloseButton,
 } from "@chakra-ui/react";
+import { toaster } from "@/components/UI/toaster";
 import { useState } from "react";
-import { toaster } from "./UI/toaster";
-import image from "@/images/pexels-marcin-dampc-807808-1684187.jpg";
-export const AddEventDialog = ({
+
+export const EditEventDialog = ({
   isOpen,
   setIsOpen,
-  onEventAdded,
+  event,
   allCategories,
+  onEventUpdated,
 }) => {
   const isMobile = useBreakpointValue({ base: true, md: false });
   const dialogSize = isMobile ? "full" : "md";
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [categories, setCategories] = useState([]); // selected category IDs
+  const [title, setTitle] = useState(event.title);
+  const [description, setDescription] = useState(event.description);
+  const [startTime, setStartTime] = useState(
+    new Date(event.startTime).toISOString().slice(0, 16)
+  );
+  const [endTime, setEndTime] = useState(
+    new Date(event.endTime).toISOString().slice(0, 16)
+  );
+  const [categories, setCategories] = useState((event.categoryIds || []).map(String));
   const [uploadedImage, setUploadedImage] = useState(null);
-  const finalImage = uploadedImage || image;
 
-  const resetForm = () => {
-    setTitle("");
-    setDescription("");
-    setStartTime("");
-    setEndTime("");
-    setCategories([]);
-    setUploadedImage(null)
-  };
+  const finalImage = uploadedImage || event.image;
 
   const handleSave = async () => {
-    // Basic validation
     if (!title.trim())
       return toaster.create({
         title: "Title is required",
@@ -75,43 +71,48 @@ export const AddEventDialog = ({
         closable: true,
       });
 
-    const newEvent = {
+    const updatedEvent = {
+      ...event,
       title,
       description,
       startTime: new Date(startTime).toISOString(),
       endTime: new Date(endTime).toISOString(),
       categoryIds: categories.map((id) => Number(id)),
-      createdBy: 1,
       image: finalImage,
-      location: "Unknown",
     };
-
-    console.log("🚀 Saving event payload:", newEvent);
 
     try {
       const fetchEvent = async () => {
-        const res = await fetch("http://localhost:3000/events", {
-          method: "POST",
+        const res = await fetch(`http://localhost:3000/events/${event.id}`, {
+          method: "PUT",
           headers: { "Content-type": "application/json" },
-          body: JSON.stringify(newEvent),
+          body: JSON.stringify(updatedEvent),
         });
-        if (!res.ok) throw new Error("Failed to create event");
-        return res.json()
-      }
 
+        if (!res.ok) throw new Error("Failed to Update event");
+        return res.json();
+      };
+
+      //Create a promise for the toaster
       const promise = fetchEvent();
 
+      // Attach toast messages
       toaster.promise(promise, {
-        loading: { title: "Saving event...", description: "Please wait" },
-        success: { title: "Event created", description: "Your" },
-        error: { title: "Save failed", description: "Something went wrong while saving the event" }
-      })
+        loading: { title: "Updating event...", description: "Please wait" },
+        success: {
+          title: "Event updated",
+          description: "Your changes were saved successfully",
+        },
+        error: {
+          title: "Update failed",
+          description: "Something went wrong while updating the event",
+        },
+      });
+
+      // Await the promise inside try/catch
       const savedEvent = await promise;
-
-      if (onEventAdded) onEventAdded(savedEvent);
-
-      // Reset form
-      resetForm();
+      
+      if (onEventUpdated) onEventUpdated(savedEvent);
       setIsOpen(false);
     } catch (err) {
       console.error(err);
@@ -127,14 +128,14 @@ export const AddEventDialog = ({
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content borderRadius="lg" p={4}>
+          <Dialog.Content borderRadius={"lg"} p={4}>
             <Dialog.Header>
-              <Dialog.Title>Add New Event</Dialog.Title>
+              <Dialog.Title>Edit Event</Dialog.Title>
             </Dialog.Header>
 
             <Dialog.Body>
-              <Fieldset.Root size="lg" maxW="full">
-                <VStack align="stretch" gap={4}>
+              <Fieldset.Root size={"lg"} maxW={"full"}>
+                <VStack align={"stretch"} gap={4}>
                   <Fieldset.Content>
                     <Field.Root required>
                       <Field.Label>Title</Field.Label>
@@ -155,7 +156,7 @@ export const AddEventDialog = ({
                     </Field.Root>
 
                     <Field.Root>
-                      <Field.Label>Event image</Field.Label>
+                      <Field.Label>Event Image</Field.Label>
                       <Input
                         type="file"
                         accept="image/*"
@@ -169,9 +170,8 @@ export const AddEventDialog = ({
                           }
                         }}
                       />
-                      <Text fontSize="sm" color="gray.500">
-                        If you don&apos;t upload an image, a default image will
-                        be used.
+                      <Text fontSize={"sm"} color={"gray.500"}>
+                        Upload a new image to replace the current one.
                       </Text>
                     </Field.Root>
 
@@ -197,12 +197,9 @@ export const AddEventDialog = ({
                     {allCategories.length > 0 ? (
                       <CheckboxGroup
                         value={categories}
-                        onValueChange={(vals) => {
-                          console.log("onValueChange fired with:", vals);
-                          setCategories(vals);
-                        }}
+                        onValueChange={(vals) => setCategories(vals)}
                       >
-                        <HStack wrap="wrap">
+                        <HStack wrap={"wrap"}>
                           {allCategories.map((cat) => (
                             <Checkbox.Root key={cat.id} value={String(cat.id)}>
                               <Checkbox.HiddenInput />
@@ -213,33 +210,24 @@ export const AddEventDialog = ({
                         </HStack>
                       </CheckboxGroup>
                     ) : (
-                      <Text color="gray.500">No categories found</Text>
+                      <Text color={"gray.500"}>No categories found</Text>
                     )}
                   </Fieldset.Content>
                 </VStack>
               </Fieldset.Root>
             </Dialog.Body>
 
-            <Dialog.Footer display="flex" justifyContent="flex-end" gap={2}>
-              <Button variant="ghost" onClick={() => {
-                toaster.create({
-                  title: "Event creation cancelled",
-                  description: "No event was saved",
-                  type: "info",
-                  duration: 3000,
-                  closable: true,
-                })
-                setIsOpen(false)
-              }}>
+            <Dialog.Footer display={"flex"} justifyContent={"flex-end"} gap={2}>
+              <Button variant={"ghost"} onClick={() => setIsOpen(false)}>
                 Cancel
               </Button>
-              <Button colorPalette="teal" onClick={handleSave}>
+              <Button colorPalette={"teal"} onClick={handleSave}>
                 Save
               </Button>
             </Dialog.Footer>
 
             <Dialog.CloseTrigger>
-              <CloseButton size="sm" />
+              <CloseButton />
             </Dialog.CloseTrigger>
           </Dialog.Content>
         </Dialog.Positioner>
