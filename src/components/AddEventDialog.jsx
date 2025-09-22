@@ -2,115 +2,48 @@ import {
   Dialog,
   Portal,
   Button,
-  Input,
-  VStack,
-  Field,
   CloseButton,
   useBreakpointValue,
-  Fieldset,
-  CheckboxGroup,
-  Checkbox,
-  Text,
-  HStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
 import { toaster } from "./UI/toaster";
 import image from "@/images/pexels-marcin-dampc-807808-1684187.jpg";
-export const AddEventDialog = ({
-  isOpen,
-  setIsOpen,
-  onEventAdded,
-  allCategories,
-}) => {
+import { createEvent } from "@/api/events";
+import { EventFormFields } from "./EventFormFields";
+import { useEventForm } from "@/hooks/useEventForm";
+import { useEvents } from "@/context/EventsContext";
+import { BaseDialog } from "./BaseDialog";
+
+export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
+  const { submitAndAdd } = useEvents();
   const isMobile = useBreakpointValue({ base: true, md: false });
   const dialogSize = isMobile ? "full" : "md";
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [categories, setCategories] = useState([]); // selected category IDs
-  const [uploadedImage, setUploadedImage] = useState(null);
-  const finalImage = uploadedImage || image;
-
-  const resetForm = () => {
-    setTitle("");
-    setDescription("");
-    setStartTime("");
-    setEndTime("");
-    setCategories([]);
-    setUploadedImage(null)
-  };
+  const { form, handleChange, fieldErrors, validate, resetForm, formToPayload } = useEventForm({});
+  console.log("[AddEventDialog] allCategories:", allCategories);
+  console.log("[AddEventDialog] initial form:", form);
 
   const handleSave = async () => {
-    // Basic validation
-    if (!title.trim())
+    const error = validate();
+    if (error) {
       return toaster.create({
-        title: "Title is required",
+        title: "Validation Error",
+        description: error.message,
         type: "error",
         closable: true,
       });
-    if (!description.trim())
-      return toaster.create({
-        title: "Description is required",
-        type: "error",
-        closable: true,
-      });
-    if (!startTime)
-      return toaster.create({
-        title: "Start time is required",
-        type: "error",
-        closable: true,
-      });
-    if (!endTime)
-      return toaster.create({
-        title: "End time is required",
-        type: "error",
-        closable: true,
-      });
-    if (categories.length === 0)
-      return toaster.create({
-        title: "Please select at least one category",
-        type: "error",
-        closable: true,
-      });
+    }
 
-    const newEvent = {
-      title,
-      description,
-      startTime: new Date(startTime).toISOString(),
-      endTime: new Date(endTime).toISOString(),
-      categoryIds: categories.map((id) => Number(id)),
+   const payload = formToPayload({
       createdBy: 1,
-      image: finalImage,
-      location: "Unknown",
-    };
-
-    console.log("🚀 Saving event payload:", newEvent);
+      image: image,
+      location: form.location || "Unknown",
+    })
 
     try {
-      const fetchEvent = async () => {
-        const res = await fetch("http://localhost:3000/events", {
-          method: "POST",
-          headers: { "Content-type": "application/json" },
-          body: JSON.stringify(newEvent),
-        });
-        if (!res.ok) throw new Error("Failed to create event");
-        return res.json()
-      }
+      await submitAndAdd(
+        () => createEvent(payload),
+      );
 
-      const promise = fetchEvent();
-
-      toaster.promise(promise, {
-        loading: { title: "Saving event...", description: "Please wait" },
-        success: { title: "Event created", description: "Your" },
-        error: { title: "Save failed", description: "Something went wrong while saving the event" }
-      })
-      const savedEvent = await promise;
-
-      if (onEventAdded) onEventAdded(savedEvent);
-
-      // Reset form
       resetForm();
       setIsOpen(false);
     } catch (err) {
@@ -118,132 +51,70 @@ export const AddEventDialog = ({
     }
   };
 
+  const buttons = (
+    <>
+      <Button variant={"ghost"} onClick={() => setIsOpen(false)}>
+        Cancel
+      </Button>
+      <Button colorPalette={"teal"} onClick={handleSave}>
+        Save
+      </Button>
+    </>
+  );
+
   return (
-    <Dialog.Root
-      size={dialogSize}
-      open={isOpen}
+    <BaseDialog
+      isOpen={isOpen}
       onOpenChange={(e) => setIsOpen(e.open)}
+      size={dialogSize}
+      title="Add New Event"
+      footer={buttons}
     >
-      <Portal>
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content borderRadius="lg" p={4}>
-            <Dialog.Header>
-              <Dialog.Title>Add New Event</Dialog.Title>
-            </Dialog.Header>
+      <EventFormFields form={form} onChange={handleChange} allCategories={allCategories} fieldErrors={fieldErrors} />
+    </BaseDialog>
+    // <Dialog.Root
+    //   size={dialogSize}
+    //   open={isOpen}
+    //   onOpenChange={(e) => setIsOpen(e.open)}
+    // >
+    //   <Portal>
+    //     <Dialog.Backdrop />
+    //     <Dialog.Positioner>
+    //       <Dialog.Content borderRadius="lg" p={4}>
+    //         <Dialog.Header>
+    //           <Dialog.Title>Add New Event</Dialog.Title>
+    //         </Dialog.Header>
 
-            <Dialog.Body>
-              <Fieldset.Root size="lg" maxW="full">
-                <VStack align="stretch" gap={4}>
-                  <Fieldset.Content>
-                    <Field.Root required>
-                      <Field.Label>Title</Field.Label>
-                      <Input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Enter event title"
-                      />
-                    </Field.Root>
+    //         <Dialog.Body>
+    //           <EventFormFields
+    //             form={form}
+    //             onChange={handleChange}
+    //             allCategories={allCategories}
+    //             fieldErrors={fieldErrors}
+    //           />
+    //         </Dialog.Body>
 
-                    <Field.Root required>
-                      <Field.Label>Description</Field.Label>
-                      <Input
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Enter event description"
-                      />
-                    </Field.Root>
+    //         <Dialog.Footer display="flex" justifyContent="flex-end" gap={2}>
+    //           <Button
+    //             variant="ghost"
+    //             onClick={() => {
+    //               resetForm();
+    //               setIsOpen(false);
+    //             }}
+    //           >
+    //             Cancel
+    //           </Button>
+    //           <Button colorPalette="teal" onClick={handleSave}>
+    //             Save
+    //           </Button>
+    //         </Dialog.Footer>
 
-                    <Field.Root>
-                      <Field.Label>Event image</Field.Label>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = () =>
-                              setUploadedImage(reader.result);
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      />
-                      <Text fontSize="sm" color="gray.500">
-                        If you don&apos;t upload an image, a default image will
-                        be used.
-                      </Text>
-                    </Field.Root>
-
-                    <Field.Root required>
-                      <Field.Label>Start Time</Field.Label>
-                      <Input
-                        type="datetime-local"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                      />
-                    </Field.Root>
-
-                    <Field.Root required>
-                      <Field.Label>End Time</Field.Label>
-                      <Input
-                        type="datetime-local"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                      />
-                    </Field.Root>
-
-                    <Fieldset.Legend>Categories</Fieldset.Legend>
-                    {allCategories.length > 0 ? (
-                      <CheckboxGroup
-                        value={categories}
-                        onValueChange={(vals) => {
-                          console.log("onValueChange fired with:", vals);
-                          setCategories(vals);
-                        }}
-                      >
-                        <HStack wrap="wrap">
-                          {allCategories.map((cat) => (
-                            <Checkbox.Root key={cat.id} value={String(cat.id)}>
-                              <Checkbox.HiddenInput />
-                              <Checkbox.Control />
-                              <Checkbox.Label>{cat.name}</Checkbox.Label>
-                            </Checkbox.Root>
-                          ))}
-                        </HStack>
-                      </CheckboxGroup>
-                    ) : (
-                      <Text color="gray.500">No categories found</Text>
-                    )}
-                  </Fieldset.Content>
-                </VStack>
-              </Fieldset.Root>
-            </Dialog.Body>
-
-            <Dialog.Footer display="flex" justifyContent="flex-end" gap={2}>
-              <Button variant="ghost" onClick={() => {
-                toaster.create({
-                  title: "Event creation cancelled",
-                  description: "No event was saved",
-                  type: "info",
-                  duration: 3000,
-                  closable: true,
-                })
-                setIsOpen(false)
-              }}>
-                Cancel
-              </Button>
-              <Button colorPalette="teal" onClick={handleSave}>
-                Save
-              </Button>
-            </Dialog.Footer>
-
-            <Dialog.CloseTrigger>
-              <CloseButton size="sm" />
-            </Dialog.CloseTrigger>
-          </Dialog.Content>
-        </Dialog.Positioner>
-      </Portal>
-    </Dialog.Root>
+    //         <Dialog.CloseTrigger asChild>
+    //           <CloseButton size="sm" />
+    //         </Dialog.CloseTrigger>
+    //       </Dialog.Content>
+    //     </Dialog.Positioner>
+    //   </Portal>
+    // </Dialog.Root>
   );
 };

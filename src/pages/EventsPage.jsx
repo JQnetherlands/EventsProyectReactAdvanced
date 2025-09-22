@@ -16,48 +16,25 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { AddEventDialog } from "@/components/AddEventDialog";
-import { useLoaderData } from "react-router-dom";
 import { Link as RouterLink } from "react-router-dom";
+import { useEvents } from "@/context/EventsContext";
+import { filterEvents } from "@/utils/filterEvents";
 
-export const loader = async function getEventList() {
-  const [fetchEventsResponse, fetchCategories] = await Promise.all([
-    fetch("http://localhost:3000/events"),
-    fetch("http://localhost:3000/categories"),
-  ]);
-
-  const [events, categories] = await Promise.all([
-    fetchEventsResponse.json(),
-    fetchCategories.json(),
-  ]);
-
-  const enrichedEvents = events.map((event) => {
-    const eventCategories = event.categoryIds.map((id) => {
-      const category = categories.find((c) => c.id === id);
-      return category.name;
-    });
-    return { ...event, eventCategories };
-  });
-  return { events: enrichedEvents, categories };
-};
 
 export const EventsPage = () => {
-  const { events: initialEvents, categories } = useLoaderData();
-  const [events, setEvents] = useState(initialEvents);
+  const { events, loading, error, categories } = useEvents();
+  console.log("first time loaded data",events);
+  if (loading) return <Text>Loading events...</Text>;
+  if (error) return <Text color={"red.500"}>Error: {error.message}</Text>;
+  if (!events.length) return <Text>No events found</Text>;
+
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
 
-  const filteredEvents = events.filter((event) => {
-    const matchesSearch = event.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
 
-    const matchesCategory =
-      selectedCategories.length === 0 ||
-      event.categoryIds.some((id) => selectedCategories.includes(id));
-    
-    return matchesSearch && matchesCategory
-  });
+  const filteredEvents = filterEvents(events, searchQuery, selectedCategories);
+
   const renderEvents = filteredEvents.map((event) => {
     return (
       <LinkBox
@@ -101,6 +78,10 @@ export const EventsPage = () => {
           </Text>
 
           <Text fontSize={{ base: "sm", md: "md" }} color="gray.600">
+            Location: {event.location}
+          </Text>
+
+          <Text fontSize={{ base: "sm", md: "md" }} color="gray.600">
             Start:{" "}
             {new Date(event.startTime).toLocaleString(undefined, {
               dateStyle: "medium",
@@ -132,11 +113,11 @@ export const EventsPage = () => {
   const filterCheckboxes = () => (
     <CheckboxGroup
       value={selectedCategories}
-      onValueChange={(vals) => setSelectedCategories(vals)}
+      onValueChange={(vals) => setSelectedCategories(vals.map(Number))}
     >
       <HStack wrap={"wrap"} mb={2}>
         {categories.map((cat) => (
-          <Checkbox.Root key={cat.id} value={cat.id}>
+          <Checkbox.Root key={cat.id} value={String(cat.id)}>
             <Checkbox.HiddenInput />
             <Checkbox.Control />
             <Checkbox.Label>{cat.name}</Checkbox.Label>
@@ -167,15 +148,6 @@ export const EventsPage = () => {
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         allCategories={categories}
-        onEventAdded={(newEvent) => {
-          const enrichedEvent = {
-            ...newEvent,
-            eventCategories: newEvent.categoryIds.map(
-              (id) => categories.find((c) => c.id === id).name
-            ),
-          };
-          setEvents([enrichedEvent, ...events]);
-        }}
         />)
       }
 

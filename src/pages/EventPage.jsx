@@ -1,5 +1,6 @@
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useState } from "react";
+import { toaster } from "@/components/UI/toaster";
 import {
   Heading,
   Box,
@@ -12,90 +13,48 @@ import {
   Portal,
   CloseButton,
 } from "@chakra-ui/react";
-import { toaster } from "@/components/UI/toaster";
 import { EditEventDialog } from "@/components/EditEventDialog"; // we’ll create this next
+import {
+  deleteEvent,
+} from "@/api/events";
+import { messages } from "@/utils/messages";
+import { useEvents } from "@/context/EventsContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
-export const loader = async ({ params }) => {
-  const [eventRes, categoriesRes, usersRes] = await Promise.all([
-    fetch(`http://localhost:3000/events/${params.eventId}`),
-    fetch(`http://localhost:3000/categories`),
-    fetch(`http://localhost:3000/users`),
-  ]);
 
-  const [event, categories, usersData] = await Promise.all([
-    eventRes.json(),
-    categoriesRes.json(),
-    usersRes.json(),
-  ]);
+export const EventPage = ({ onEventDeleted }) => {
+  const { eventId } = useParams();
+  const { submitAndRemove, events, categories, loading } = useEvents();
 
-  const eventCategories = event.categoryIds.map((id) => {
-    const category = categories.find(
-      (categoryObject) => id === categoryObject.id
-    ).name;
-    return category;
-  });
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
 
-  const users = usersData;
-  console.log(usersData);
-
-  const creator = users.find((user) => user.id === event.createdBy);
-
-  return { ...event, eventCategories, creator, allCategories: categories };
-};
-
-export const EventPage = () => {
-  const initialEvent = useLoaderData();
-  const navigate = useNavigate();
-
-  console.log(initialEvent);
+  console.log(useParams())
+  const event = events.find((e) => String(e.id) === String(eventId));
+  if (!event) {
+    return <Text>Event no found</Text>
+  }
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [event, setEvent] = useState(initialEvent);
-
-  const handleEventUpdated = (savedEvent) => {
-    const eventCategories = savedEvent.categoryIds.map(
-      (id) => initialEvent.allCategories.find((c) => c.id === id)?.name
-    );
-    setEvent((prev) => ({
-      ...savedEvent,
-      eventCategories,
-      creator: prev.creator,
-    }));
-  };
 
   const handleDelete = async () => {
     try {
-      const fetchEvent = async () => {
-        const res = await fetch(`http://localhost:3000/events/${event.id}`, {
-          method: "DELETE",
-        });
-
-        if (!res.ok) throw new Error("Failed to delete event");
-        return res.json();
-      };
-      const promise = fetchEvent();
-
-      toaster.promise(promise, {
-        loading: { title: "Deleting event...", description: "Please wait" },
-        success: {
-          title: "Event deleted",
-          description: "The event was removed successfully",
-        },
-        error: {
-          title: "Delete failed",
-          description: "Something went wrong while deleting the event",
-        },
-      });
-
-      await promise;
-      navigate("/"); // this is the correct url
+      await submitAndRemove(
+        () => deleteEvent(event.id),
+        messages.event.delete,
+        () => event.id
+      );
+      
+      onEventDeleted?.(event.id);
     } catch (err) {
       console.error(err);
     }
   };
 
-  console.log(event);
+  
+
   return (
     <VStack
       w={"full"}
@@ -118,6 +77,10 @@ export const EventPage = () => {
 
       <Text>{event.description}</Text>
 
+      <Text fontSize={{ base: "sm", md: "md", lg: "lg" }} color="gray.600">
+        Location: {event.location || "Unknown"}
+      </Text>
+
       <Text fontSize={{ base: "sm", md: "md", lg: "lg" }} color={"gray.500"}>
         Start:{" "}
         {new Date(event.startTime).toLocaleString(undefined, {
@@ -134,8 +97,11 @@ export const EventPage = () => {
         })}
       </Text>
 
-      <Text fontSize={{ base: "sm", md: "md", lg: "lg" }} color={"gray.600"}>
-        Categories: {event.eventCategories.join(", ")}
+      <Text>
+        Categories:{" "}
+        {event.eventCategories?.length > 0
+          ? event.eventCategories.join(", ")
+          : "Loading..."}
       </Text>
 
       {/* Creator info */}
@@ -178,12 +144,20 @@ export const EventPage = () => {
           isOpen={isEditOpen}
           setIsOpen={setIsEditOpen}
           event={event}
-          allCategories={initialEvent.allCategories}
-          onEventUpdated={handleEventUpdated}
+          allCategories={categories}
         />
       )}
 
-      <Dialog.Root
+      <ConfirmDialog
+        isOpen={isDeleteOpen}
+        setIsOpen={setIsDeleteOpen}
+        title="Delete Event"
+        description={`Are you sure want to delete "${event.title}" This ation cannot be undone.`}
+        onConfirm={handleDelete}
+        confirmLabel="Delete"
+        confirmColor="red"
+      />
+      {/* <Dialog.Root
         open={isDeleteOpen}
         onOpenChange={(e) => setIsDeleteOpen(e.open)}
       >
@@ -211,7 +185,16 @@ export const EventPage = () => {
               >
                 <Button
                   variant={"ghost"}
-                  onClick={() => setIsDeleteOpen(false)}
+                  onClick={() => {
+                    toaster.create({
+                      title: "Edit cancelled",
+                      description: "No changes were saved",
+                      type: "info",
+                      duration: 3000,
+                      closable: true,
+                    });
+                    setIsDeleteOpen(false);
+                  }}
                 >
                   Cancel
                 </Button>
@@ -221,13 +204,13 @@ export const EventPage = () => {
                 </Button>
               </Dialog.Footer>
 
-              <Dialog.CloseTrigger>
+              <Dialog.CloseTrigger asChild>
                 <CloseButton />
               </Dialog.CloseTrigger>
             </Dialog.Content>
           </Dialog.Positioner>
         </Portal>
-      </Dialog.Root>
+      </Dialog.Root> */}
     </VStack>
   );
 };

@@ -1,29 +1,28 @@
-import { HStack, Link as ChakraLink, Box } from '@chakra-ui/react';
-import { Link, useLocation } from 'react-router-dom';
+import { HStack, Link as ChakraLink, Box } from "@chakra-ui/react";
+import { NavLink } from "react-router-dom";
 
 export const Navigation = () => {
-  const location = useLocation();
   return (
     <Box
-      position={"sticky"}
+      position="sticky"
       top={0}
       zIndex={10}
-      bg={"gray.100"}
-      w={"full"}
+      bg="gray.100"
+      w="full"
       p={2}
-      boxShadow={"sm"}
+      boxShadow="sm"
     >
-      <HStack
-        justify={"space-around"}
-      >
-        <ChakraLink
-          as={Link}
-          to="/"
-          fontWeight={"bold"}
-          color={location.pathname === "/" ? "teal.500" : "black"}
-        >
-          {location.pathname === "/" ? "Events" : "Back to Events"}
-        </ChakraLink>
+      <HStack justify="space-around">
+        <NavLink to="/" end>
+          {({ isActive }) => (
+            <ChakraLink
+              fontWeight="bold"
+              color={isActive ? "teal.500" : "black"}
+            >
+              {isActive ? "Events" : "Back to Events"}
+            </ChakraLink>
+          )}
+        </NavLink>
       </HStack>
     </Box>
   );
