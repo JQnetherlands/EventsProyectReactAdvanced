@@ -1,6 +1,5 @@
 import { useParams } from "react-router-dom";
 import { useState } from "react";
-import { toaster } from "@/components/UI/toaster";
 import {
   Heading,
   Box,
@@ -9,9 +8,6 @@ import {
   Image,
   VStack,
   Button,
-  Dialog,
-  Portal,
-  CloseButton,
 } from "@chakra-ui/react";
 import { EditEventDialog } from "@/components/EditEventDialog"; // we’ll create this next
 import {
@@ -157,60 +153,6 @@ export const EventPage = ({ onEventDeleted }) => {
         confirmLabel="Delete"
         confirmColor="red"
       />
-      {/* <Dialog.Root
-        open={isDeleteOpen}
-        onOpenChange={(e) => setIsDeleteOpen(e.open)}
-      >
-        <Portal>
-          <Dialog.Backdrop />
-          <Dialog.Positioner>
-            <Dialog.Content borderRadius={"lg"} p={{ base: 3, md: 4, lg: 6 }}>
-              <Dialog.Header>
-                <Dialog.Title fontSize={{ base: "md", md: "lg", lg: "xl" }}>
-                  Delete Event
-                </Dialog.Title>
-              </Dialog.Header>
-
-              <Dialog.Body>
-                <Text>
-                  Are you sure you want to delete <b>{event.title}</b>? This
-                  action cannot be undone.
-                </Text>
-              </Dialog.Body>
-
-              <Dialog.Footer
-                display={"flex"}
-                justifyContent={"flex-end"}
-                gap={2}
-              >
-                <Button
-                  variant={"ghost"}
-                  onClick={() => {
-                    toaster.create({
-                      title: "Edit cancelled",
-                      description: "No changes were saved",
-                      type: "info",
-                      duration: 3000,
-                      closable: true,
-                    });
-                    setIsDeleteOpen(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-
-                <Button colorPalette={"red"} onClick={handleDelete}>
-                  Delete
-                </Button>
-              </Dialog.Footer>
-
-              <Dialog.CloseTrigger asChild>
-                <CloseButton />
-              </Dialog.CloseTrigger>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root> */}
     </VStack>
   );
 };

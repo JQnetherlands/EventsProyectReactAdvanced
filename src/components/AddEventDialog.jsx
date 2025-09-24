@@ -1,8 +1,5 @@
 import {
-  Dialog,
-  Portal,
   Button,
-  CloseButton,
   useBreakpointValue,
 } from "@chakra-ui/react";
 import { toaster } from "./UI/toaster";
@@ -12,6 +9,8 @@ import { EventFormFields } from "./EventFormFields";
 import { useEventForm } from "@/hooks/useEventForm";
 import { useEvents } from "@/context/EventsContext";
 import { BaseDialog } from "./BaseDialog";
+import { showToast } from "@/utils/showToast";
+import { messages } from "@/utils/messages";
 
 export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
   const { submitAndAdd } = useEvents();
@@ -24,13 +23,13 @@ export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
 
   const handleSave = async () => {
     const error = validate();
+    console.log("error adding event",error)
     if (error) {
-      return toaster.create({
-        title: "Validation Error",
-        description: error.message,
-        type: "error",
-        closable: true,
-      });
+      // showToast.validation.custom(error.message);
+      console.log(error)
+      showToast.validation.required(messages.validation.labels[error.field])
+
+      return; 
     }
 
    const payload = formToPayload({
@@ -53,7 +52,10 @@ export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
 
   const buttons = (
     <>
-      <Button variant={"ghost"} onClick={() => setIsOpen(false)}>
+      <Button variant={"ghost"} onClick={() => {
+        showToast.cancel();
+        setIsOpen(false)
+      }}>
         Cancel
       </Button>
       <Button colorPalette={"teal"} onClick={handleSave}>
@@ -72,49 +74,5 @@ export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
     >
       <EventFormFields form={form} onChange={handleChange} allCategories={allCategories} fieldErrors={fieldErrors} />
     </BaseDialog>
-    // <Dialog.Root
-    //   size={dialogSize}
-    //   open={isOpen}
-    //   onOpenChange={(e) => setIsOpen(e.open)}
-    // >
-    //   <Portal>
-    //     <Dialog.Backdrop />
-    //     <Dialog.Positioner>
-    //       <Dialog.Content borderRadius="lg" p={4}>
-    //         <Dialog.Header>
-    //           <Dialog.Title>Add New Event</Dialog.Title>
-    //         </Dialog.Header>
-
-    //         <Dialog.Body>
-    //           <EventFormFields
-    //             form={form}
-    //             onChange={handleChange}
-    //             allCategories={allCategories}
-    //             fieldErrors={fieldErrors}
-    //           />
-    //         </Dialog.Body>
-
-    //         <Dialog.Footer display="flex" justifyContent="flex-end" gap={2}>
-    //           <Button
-    //             variant="ghost"
-    //             onClick={() => {
-    //               resetForm();
-    //               setIsOpen(false);
-    //             }}
-    //           >
-    //             Cancel
-    //           </Button>
-    //           <Button colorPalette="teal" onClick={handleSave}>
-    //             Save
-    //           </Button>
-    //         </Dialog.Footer>
-
-    //         <Dialog.CloseTrigger asChild>
-    //           <CloseButton size="sm" />
-    //         </Dialog.CloseTrigger>
-    //       </Dialog.Content>
-    //     </Dialog.Positioner>
-    //   </Portal>
-    // </Dialog.Root>
   );
 };

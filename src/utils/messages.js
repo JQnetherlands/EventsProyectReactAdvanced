@@ -1,18 +1,13 @@
 export const messages = {
   validation: {
-    title: "Title is required",
-    description: "Description is required",
-    location: "Location is required",
-    startTime: {
-      required: "Start time is required",
-      invalidOrder: "Start time must be before end time",
-      // future: "Start time must be in the future" // optional
-    },
-    endTime: {
-      required: "End time is required",
-      // future: "End time must be in the future" // optional
-    },
-    categories: "Please select at least one category",
+    labels: {
+      title: "Title",
+      description: "Description",
+      location: "Location",
+      startTime: "Start time",
+      endTime: "End time",
+      categories: "Categories",
+    }
   },
 
   event: {

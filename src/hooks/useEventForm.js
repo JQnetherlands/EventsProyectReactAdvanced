@@ -20,10 +20,10 @@ export function useEventForm(initial = {}) {
   const handleChange = (field, value) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  const validate = () => {
+  const validate = () => { // this is okay or needs to be changed chatgpt , do you understand me?
     const error = validateEvent(form);
     if (error) {
-      setFieldErrors({ [error.field]: true });
+      setFieldErrors({ [error.field]: error.message });
       return error;
     }
     setFieldErrors({});

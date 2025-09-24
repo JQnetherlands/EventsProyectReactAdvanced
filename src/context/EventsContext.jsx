@@ -131,9 +131,7 @@ export const EventsProvider = ({ children, initialEvents = [] }) => {
     message = messages.event.delete,
     getId = (res) => res?.id
   ) => {
-const res = await submitWithToaster(promiseFactory, message);
-console.log("[submitAndRemove] API response:", res);
-    
+  const res = await submitWithToaster(promiseFactory, message);    
     const id = getId(res);
     if (id === undefined || id === null) {
       throw new Error(

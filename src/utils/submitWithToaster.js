@@ -1,4 +1,5 @@
 import { toaster } from "../components/UI/toaster"
+import { showToast } from "./showToast";
 
 export async function submitWithToaster(promiseFactory, message= {}) {
   const { 
@@ -27,12 +28,7 @@ export async function submitWithToaster(promiseFactory, message= {}) {
     return await promise
   } catch (err) {
     
-    toaster.create({
-      title: err.title || "Error",
-      description: err.message || String(err),
-      type: "error",
-      closable: true,
-    })
+    showToast.error(err);
     throw err
   }
 }

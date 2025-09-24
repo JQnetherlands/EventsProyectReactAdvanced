@@ -1,5 +1,6 @@
 import { Button, Text, useBreakpointValue } from "@chakra-ui/react";
 import { BaseDialog } from "./BaseDialog";
+import { showToast } from "@/utils/showToast";
 
 export const ConfirmDialog = ({
     isOpen,
@@ -20,7 +21,10 @@ export const ConfirmDialog = ({
 
     const buttons = (
         <>
-            <Button variant={"ghost"} onClick={() => setIsOpen(false)}>Cancel</Button>
+            <Button variant={"ghost"} onClick={() => {
+                showToast.cancel();
+                setIsOpen(false);
+            }}>Cancel</Button>
             <Button colorPalette={confirmColor} onClick={handleConfirm}>
                 {confirmLabel}
             </Button>
