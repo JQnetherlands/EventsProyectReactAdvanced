@@ -13,7 +13,7 @@
  * <Navigation />
  */
 
-import { HStack, Link as ChakraLink, Box } from "@chakra-ui/react";
+import { HStack, Text, Box } from "@chakra-ui/react";
 import { NavLink } from "react-router-dom";
 
 export const Navigation = () => {
@@ -30,15 +30,15 @@ export const Navigation = () => {
       {/* Horizontal stack for layout of nav items */}
       <HStack justify="space-around">
         {/* NavLink handles active state styling for routes */}
-        <NavLink to="/" end>
+        <NavLink to="/"  end>
           {({ isActive }) => (
-            <ChakraLink
+            <Text
               fontWeight="bold"
               color={isActive ? "teal.500" : "black"} // highlight active page
             >
               {/* Change label based on active state */}
               {isActive ? "Events" : "Back to Events"}
-            </ChakraLink>
+            </Text>
           )}
         </NavLink>
       </HStack>

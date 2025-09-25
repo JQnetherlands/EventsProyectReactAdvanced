@@ -186,6 +186,9 @@ export const EventsPage = () => {
       {/* Search input */}
       <Input
         placeholder="Search events..."
+        type="text"
+        id="searchQuery"
+        name="searchQuery"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         mb={2}
