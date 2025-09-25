@@ -1,10 +1,35 @@
+/**
+ * EventsContext.jsx
+ * -----------------
+ * This file defines a React Context (`EventsContext`) and its Provider (`EventsProvider`)
+ * to manage global state for events, categories, and users in the app.
+ *
+ * Responsibilities:
+ * - Fetch events, categories, and users on load
+ * - Normalize events (map categoryIds → category names, resolve creator → user)
+ * - Provide helper methods for adding, updating, and removing events
+ * - Handle async mutations with toast notifications (via submitWithToaster)
+ *
+ * Usage:
+ * - Wrap your app with <EventsProvider> to make events available globally
+ * - Access the context with `useEvents()`
+ */
 import { submitWithToaster } from "@/utils/submitWithToaster";
-import { createContext, useContext, useReducer, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useMemo,
+} from "react";
 import { fetchEvents, fetchCategories, fetchUsers } from "@/api/events";
 import { normalizeEvent } from "@/utils/normalizeEvent";
 import { messages } from "@/utils/messages";
+
+// Create context object (null default to enforce provider usage)
 const EventsContext = createContext(null);
 
+// Initial state for the reducer
 const initialState = {
   events: [],
   categories: [],
@@ -13,17 +38,16 @@ const initialState = {
   error: null,
 };
 
+// Define action constants for reducer
 const ACTIONS = {
   SET_ALL: "SET_ALL",
-  SET: "SET",
-  SET_CATEGORIES: "SET_CATEGORIES",
-  SET_USERS: "SET_USERS",
   ADD: "ADD",
   UPDATE: "UPDATE",
   REMOVE: "REMOVE",
   ERROR: "ERROR",
 };
 
+// Reducer: handles state transitions
 function reducer(state, action) {
   switch (action.type) {
     case ACTIONS.SET_ALL:
@@ -34,7 +58,7 @@ function reducer(state, action) {
         users: action.payload.users || [],
         loading: false,
         error: null,
-      }
+      };
     case ACTIONS.ADD:
       return { ...state, events: [action.payload, ...state.events] };
     case ACTIONS.UPDATE:
@@ -56,12 +80,18 @@ function reducer(state, action) {
   }
 }
 
+/**
+ * EventsProvider
+ * --------------
+ * Provides global events state and helper functions to child components.
+ */
 export const EventsProvider = ({ children, initialEvents = [] }) => {
   const [state, dispatch] = useReducer(reducer, {
     ...initialState,
-    events: initialEvents,
+    events: initialEvents, // optional preloaded events
   });
 
+  // Load data (events, categories, users) on mount
   useEffect(() => {
     let cancelled = false;
 
@@ -72,15 +102,12 @@ export const EventsProvider = ({ children, initialEvents = [] }) => {
           fetchCategories(),
           fetchUsers(),
         ]);
-        console.log(events) 
         if (cancelled) return;
-        console.log(events)
-        const enrichedEvents = events.map((e) => {
-          const normalized = normalizeEvent(e, categories, users);
-          return normalized;
+        // Store raw events, categories, and users in state
+        dispatch({
+          type: ACTIONS.SET_ALL,
+          payload: { events, categories, users },
         });
-        console.log(enrichedEvents)
-        dispatch({ type: ACTIONS.SET_ALL, payload: { events: enrichedEvents, categories, users}, });
       } catch (err) {
         if (cancelled) return;
         dispatch({ type: ACTIONS.ERROR, payload: err });
@@ -89,41 +116,39 @@ export const EventsProvider = ({ children, initialEvents = [] }) => {
     load();
 
     return () => {
-      cancelled = true;
+      cancelled = true; // cleanup flag to avoid setting state on unmounted component
     };
   }, []);
 
-  // simple action wrappers
+  // --- Simple state mutators (sync) ---
   const addEvent = (event) => dispatch({ type: ACTIONS.ADD, payload: event });
   const updateEventInState = (event) =>
     dispatch({ type: ACTIONS.UPDATE, payload: event });
   const removeEvent = (id) => dispatch({ type: ACTIONS.REMOVE, payload: id });
 
-  // default transform: normalize saved event with current categories & users
-  const defaultTransform = (saved, cats = [], users = []) => normalizeEvent(saved, cats, users);
-  
-  // helpers that use submitWithToaster ()
+  // --- Async helpers with toaster feedback ---
   const submitAndAdd = async (
     promiseFactory,
-    message = messages.event.create,
-    transform = defaultTransform
+    message = messages.event.create
   ) => {
     const saved = await submitWithToaster(promiseFactory, message);
     // transform gets (saved, categories, users)
-    const toStore = transform(saved, state.categories, state.users);
-    addEvent(toStore);
-    return toStore;
+    addEvent(saved);
+    return saved;
   };
 
   const submitAndUpdate = async (
     promiseFactory,
-    message = messages.event.update,
-    transform = defaultTransform
+    message = messages.event.update
   ) => {
     const saved = await submitWithToaster(promiseFactory, message);
-    const toStore = transform(saved, state.categories, state.users);
-    updateEventInState(toStore);
-    return toStore;
+
+    // Merge saved event into existing one if it exists
+    const existing = state.events.find((e) => e.id === saved?.id);
+    const merged = existing ? { ...existing, ...saved } : saved;
+
+    updateEventInState(merged);
+    return merged;
   };
 
   const submitAndRemove = async (
@@ -131,9 +156,9 @@ export const EventsProvider = ({ children, initialEvents = [] }) => {
     message = messages.event.delete,
     getId = (res) => res?.id
   ) => {
-  const res = await submitWithToaster(promiseFactory, message);    
+    const res = await submitWithToaster(promiseFactory, message);
     const id = getId(res);
-    if (id === undefined || id === null) {
+    if (id === null) {
       throw new Error(
         "Could not determine id to remove from response. Pass getId function."
       );
@@ -141,8 +166,19 @@ export const EventsProvider = ({ children, initialEvents = [] }) => {
     removeEvent(id);
     return res;
   };
+
+  // --- Derived state ---
+  // Normalize events each time events/categories/users change
+  const normalizedEvents = useMemo(() => {
+    const normalized = state.events.map((e) =>
+      normalizeEvent(e, state.categories, state.users)
+    );
+    return normalized;
+  }, [state.events, state.categories, state.users]);
+
+  // Expose context value
   const value = {
-    events: state.events,
+    events: normalizedEvents, // always normalized
     categories: state.categories,
     users: state.users,
     loading: state.loading,
@@ -164,6 +200,10 @@ export const EventsProvider = ({ children, initialEvents = [] }) => {
   );
 };
 
+/**
+ * Hook to access EventsContext
+ * Throws if used outside of EventsProvider
+ */
 export const useEvents = () => {
   const ctx = useContext(EventsContext);
   if (!ctx) {

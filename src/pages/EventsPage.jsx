@@ -1,3 +1,20 @@
+/**
+ * EventsPage.jsx
+ * -----------------
+ * This page displays a **list of all events** with filtering and search options.
+ * Features:
+ *  - Fetches events and categories from the EventsContext.
+ *  - Displays a responsive grid of event cards.
+ *  - Provides:
+ *    - Search by title/description
+ *    - Filter by categories (checkboxes)
+ *    - Add new event (opens AddEventDialog)
+ *
+ * State:
+ *  - isOpen (boolean): controls the AddEventDialog visibility.
+ *  - searchQuery (string): input for filtering events by text.
+ *  - selectedCategories (array): category IDs selected for filtering.
+ */
 import {
   Heading,
   VStack,
@@ -20,21 +37,27 @@ import { Link as RouterLink } from "react-router-dom";
 import { useEvents } from "@/context/EventsContext";
 import { filterEvents } from "@/utils/filterEvents";
 
-
 export const EventsPage = () => {
+  // Context: events, loading state, errors, and categories
   const { events, loading, error, categories } = useEvents();
-  console.log("first time loaded data",events);
+
+  // Local state
+  const [isOpen, setIsOpen] = useState(false); // Controls AddEventDialog
+  const [searchQuery, setSearchQuery] = useState(""); // Search input value
+  const [selectedCategories, setSelectedCategories] = useState([]); // Selected categories for filter
+
+  // Loading & error states
   if (loading) return <Text>Loading events...</Text>;
   if (error) return <Text color={"red.500"}>Error: {error.message}</Text>;
   if (!events.length) return <Text>No events found</Text>;
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState([]);
-
-
+  // Apply filters (search + categories)
   const filteredEvents = filterEvents(events, searchQuery, selectedCategories);
 
+  /**
+   * Renders a list of event cards (one per event).
+   * Each card is clickable (via LinkOverlay) to navigate to EventPage.
+   */
   const renderEvents = filteredEvents.map((event) => {
     return (
       <LinkBox
@@ -53,9 +76,12 @@ export const EventsPage = () => {
         }}
         cursor="pointer"
       >
+        {/* Event image */}
         <AspectRatio ratio={16 / 9}>
           <Image src={event.image} alt={event.title} objectFit="cover" />
         </AspectRatio>
+
+        {/* Event details */}
         <Box p={4}>
           <Heading
             as="h3"
@@ -110,6 +136,9 @@ export const EventsPage = () => {
     );
   });
 
+  /**
+   * Render a group of category checkboxes for filtering.
+   */
   const filterCheckboxes = () => (
     <CheckboxGroup
       value={selectedCategories}
@@ -135,29 +164,37 @@ export const EventsPage = () => {
       mx="auto"
       p={2}
     >
+      {/* Page title */}
       <Heading size="lg" textAlign="center" my={2}>
         List of events
       </Heading>
 
+      {/* Button to open AddEventDialog */}
       <Button colorPalette="teal" onClick={() => setIsOpen(true)}>
         ➕ Add Event
       </Button>
 
+      {/* AddEventDialog (conditionally rendered) */}
       {isOpen && (
         <AddEventDialog
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        allCategories={categories}
-        />)
-      }
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          allCategories={categories}
+        />
+      )}
 
+      {/* Search input */}
       <Input
         placeholder="Search events..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         mb={2}
       />
+
+      {/* Category filters */}
       {categories.length > 0 && filterCheckboxes()}
+
+      {/* Event grid */}
       {filteredEvents.length > 0 ? (
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={4} w="full">
           {renderEvents}

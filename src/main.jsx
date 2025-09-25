@@ -8,16 +8,16 @@ import { Provider } from "./components/UI/provider";
 import { EventsProvider } from "./context/EventsContext";
 import { Toaster } from "@/components/ui/toaster";
 
-function EventPageWrapper() {
-  const navigate = useNavigate();
-  return (
-    <EventPage
-      onEventDeleted={(deletedId) => {
-       if (deletedId) navigate("/");
-      }}    
-    />
-  )
-}
+// function EventPageWrapper() {
+//   const navigate = useNavigate();
+//   return (
+//     <EventPage
+//       onEventDeleted={(deletedId) => {
+//        if (deletedId) navigate("/");
+//       }}    
+//     />
+//   )
+// }
 
 const router = createBrowserRouter([
   {
@@ -30,7 +30,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/event/:eventId",
-        element: <EventPageWrapper />,
+        element: <EventPage />,
       },
     ],
   },

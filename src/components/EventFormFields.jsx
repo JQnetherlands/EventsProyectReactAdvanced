@@ -1,12 +1,38 @@
-import { Field, Fieldset, Input, VStack, Text, Checkbox, CheckboxGroup, HStack } from "@chakra-ui/react";
+/**
+ * EventFormFields.jsx
+ * -------------------
+ * Presentational component that renders the form fields for an Event.
+ *
+ * Responsibilities:
+ * - Show text inputs for title, description, location, and dates
+ * - Handle image upload preview via base64
+ * - Show category checkboxes dynamically
+ * - Display validation errors (border red if invalid)
+ *
+ * Props:
+ * - form: object from useEventForm (current form state)
+ * - onChange: function (fieldName, value) → void
+ * - allCategories: array of available categories [{ id, name }]
+ * - fieldErrors: object mapping field names → error messages
+ */
 
+import {
+  Field,
+  Fieldset,
+  Input,
+  VStack,
+  Text,
+  Checkbox,
+  CheckboxGroup,
+  HStack,
+} from "@chakra-ui/react";
 
-export const EventFormFields = ({ form, onChange, allCategories = [], fieldErrors = {} }) => {
- console.log("[EventFormFields] allCategories:", allCategories);
- console.log(
-   "[EventFormFields] form.categories before render:",
-   form.categories
- );
+export const EventFormFields = ({
+  form,
+  onChange,
+  allCategories = [],
+  fieldErrors = {},
+}) => {
   return (
     <Fieldset.Root size={"lg"} maxW={"full"}>
       <VStack align={"stretch"} gap={4}>
@@ -78,7 +104,7 @@ export const EventFormFields = ({ form, onChange, allCategories = [], fieldError
               type="datetime-local"
               value={form.endTime}
               onChange={(e) => onChange("endTime", e.target.value)}
-              borderColor={fieldErrors.startTime ? "red.500" : undefined}
+              borderColor={fieldErrors.endTime ? "red.500" : undefined}
             />
           </Field.Root>
 
