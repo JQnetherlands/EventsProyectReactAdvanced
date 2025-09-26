@@ -32,7 +32,7 @@ import { messages } from "@/utils/messages";
 import { useEvents } from "@/context/EventsContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
-export const EventPage = ({ onEventDeleted }) => {
+export const EventPage = () => {
     const navigate = useNavigate();
 
   // Grab the eventId from the current route (e.g., /events/:eventId)
