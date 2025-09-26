@@ -55,7 +55,7 @@ export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
     // Build payload with safe defaults
     const payload = formToPayload({
       createdBy: 1, // default user
-      image: image, // Default fallback image
+      image: form.uploadedImage || image, // Default fallback image
       location: form.location || "Unknown", // Ensure location not empty
     });
 
