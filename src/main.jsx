@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { EventPage } from "./pages/EventPage";
 import { EventsPage } from "./pages/EventsPage";
-import { createBrowserRouter, RouterProvider, useNavigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider} from "react-router-dom";
 import { Root } from "./components/Root";
 import { Provider } from "./components/UI/provider";
 import { EventsProvider } from "./context/EventsContext";

@@ -13,7 +13,6 @@
  */
 
 import { Dialog, Portal, CloseButton } from "@chakra-ui/react";
-import { toaster } from "./UI/toaster";
 export const BaseDialog = ({
   isOpen, // Boolean: whether the dialog is open
   onOpenChange, // Function: callback for open/close state changes
@@ -21,6 +20,7 @@ export const BaseDialog = ({
   children, // ReactNode: dialog body (form or content)
   footer, // ReactNode: optional footer (e.g., Save/Cancel buttons)
   size = "md", // String: dialog size (default: medium)
+  onClose,
 }) => {
   return (
     <Dialog.Root size={size} open={isOpen} onOpenChange={onOpenChange}>
@@ -29,7 +29,7 @@ export const BaseDialog = ({
 
         {/* Centers the dialog on screen */}
         <Dialog.Positioner>
-          <Dialog.Content borderRadius={"lg"} p={{ base: 3, md: 4, lg: 6 }}>
+          <Dialog.Content borderRadius={{ base: 0, md: "lg" }} p={{ base: 3, md: 4, lg: 6 }}>
             {/* Header: title of the dialog */}
             <Dialog.Header>
               <Dialog.Title fontSize={{ base: "md", md: "lg", lg: "xl" }}>
@@ -48,13 +48,7 @@ export const BaseDialog = ({
               asChild
               onClick={() => {
                 // Show a toast when user closes dialog without saving
-                toaster.create({
-                  title: "Cancelled",
-                  description: "No changes were saved",
-                  type: "info",
-                  duration: 3000,
-                  closable: true,
-                });
+                onClose?.(); // ChatGpt 7 I want to see if I can use something that is already in the other files for this toast, cos I am calling manually I dont k now if it possible and if it possible if it wise 
               }}
             >
               <CloseButton size={"sm"} />

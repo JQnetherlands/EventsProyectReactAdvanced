@@ -8,18 +8,35 @@ import { useState } from "react";
  * - Keeps form state and field errors
  * - Exposes validate() and formToPayload(extra) helper
  */
+
+const baseForm = {
+  title: "",
+  description: "",
+  startTime: "",
+  endTime: "",
+  categories: [],
+  uploadedImage: null,
+  location: "",
+  createdBy: null,
+};
+
+const createEmptyForm = () => ({
+  ...baseForm,
+});
+
+const createInitialForm = (initial = {}) => ({
+  ...baseForm,
+  title: initial.title || "",
+  description: initial.description || "",
+  startTime: initial.startTime ? toInputDate(initial.startTime) : "",
+  endTime: initial.endTime ? toInputDate(initial.endTime) : "",
+  categories: initial.categoryIds?.map(String) || [],
+  location: initial.location || "",
+  createdBy: initial.createdBy ?? null,
+});
+
 export function useEventForm(initial = {}) {
-  const [form, setForm] = useState({
-    title: initial.title || "",
-    description: initial.description || "",
-    startTime: initial.startTime ? toInputDate(initial.startTime) : "",
-    endTime: initial.endTime ? toInputDate(initial.endTime) : "",
-    categories: initial.categoryIds?.map(String) || [],
-    uploadedImage: null,
-    location: initial.location || "",
-    // Use null rather than empty string as a safer "no value" sentinel:
-    createdBy: initial.createdBy ?? null,
-  });
+  const [form, setForm] = useState(() => createInitialForm(initial));
 
   const [fieldErrors, setFieldErrors] = useState({});
 
@@ -27,27 +44,34 @@ export function useEventForm(initial = {}) {
     setForm((prev) => ({ ...prev, [field]: value }));
 
   const validate = () => {
-    const error = validateEvent(form);
-    if (error) {
-      // store message so UI can show it inline
-      setFieldErrors({ [error.field]: error.message });
-      return error;
+    const errors = validateEvent(form); 
+
+    if (errors && Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return true; // has errors
     }
-    setFieldErrors({});
-    return null;
+    
+    setFieldErrors({})
+    return false; // valid
   };
 
+  const handleImageUpload = (file) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setForm((prev) => ({
+        ...prev,
+        uploadedImage: reader.result,
+      }));
+    };
+
+    reader.readAsDataURL(file);
+  }
+
   const resetForm = () => {
-    setForm({
-      title: "",
-      description: "",
-      startTime: "",
-      endTime: "",
-      categories: [],
-      uploadedImage: null,
-      location: "",
-      createdBy: null,
-    });
+    setForm(createEmptyForm());
     setFieldErrors({});
   };
 
@@ -59,6 +83,7 @@ export function useEventForm(initial = {}) {
   const formToPayload = (extra = {}) => {
     return {
       // Start with explicit fields we want the API to receive
+      ...extra,
       title: form.title,
       description: form.description,
       startTime: fromInputDate(form.startTime),
@@ -72,7 +97,6 @@ export function useEventForm(initial = {}) {
       // otherwise fall back to form.createdBy, then initial.createdBy
       createdBy: extra.createdBy ?? form.createdBy ?? initial.createdBy ?? null,
       // include any other extras (but keep the explicit keys above as authoritative)
-      ...extra,
     };
   };
 
@@ -80,6 +104,7 @@ export function useEventForm(initial = {}) {
     form,
     setForm,
     handleChange,
+    handleImageUpload,
     fieldErrors,
     validate,
     resetForm,

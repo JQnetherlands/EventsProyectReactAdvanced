@@ -15,6 +15,7 @@
 
 import { HStack, Text, Box } from "@chakra-ui/react";
 import { NavLink } from "react-router-dom";
+import { ColorModeToggle } from "./ColorModeToggle";
 
 export const Navigation = () => {
   return (
@@ -22,7 +23,7 @@ export const Navigation = () => {
       position="sticky" // keeps nav fixed to the top while scrolling
       top={0} // stick to very top of viewport
       zIndex={10} // ensures nav stays above page content
-      bg="gray.100" // ensures nav stays above page content
+      bg={{ base: "gray.100", _dark: "gray.900" }} // ensures nav stays above page content
       w="full" // full width across the page
       p={2} // padding inside nav bar
       boxShadow="sm" // subtle shadow for elevation
@@ -34,13 +35,14 @@ export const Navigation = () => {
           {({ isActive }) => (
             <Text
               fontWeight="bold"
-              color={isActive ? "teal.500" : "black"} // highlight active page
+              color={isActive ? { base: "teal.500", _dark: "teal.300"} : { base: "gray.800", _dark: "gray.200" }} // highlight active page
             >
               {/* Change label based on active state */}
               {isActive ? "Events" : "Back to Events"}
             </Text>
           )}
         </NavLink>
+        <ColorModeToggle />
       </HStack>
     </Box>
   );

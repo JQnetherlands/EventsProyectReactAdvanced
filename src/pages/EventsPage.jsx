@@ -129,7 +129,7 @@ export const EventsPage = () => {
             fontWeight="semibold"
             mt={2}
           >
-            Category: {event.eventCategories.join(", ")}
+            Category: {event.eventCategories?.join(", ") || "-"}
           </Text>
         </Box>
       </LinkBox>

@@ -15,6 +15,9 @@
  * @param {string} event.location - Event location
  * @returns {Object|null} - { field, message } if invalid, or null if valid
  */
+
+import { DomainError } from "./domainError";
+
 // utils/validateEvent.js
 export function validateEvent({
   title,
@@ -24,39 +27,48 @@ export function validateEvent({
   categories,
   location,
 }) {
+  const errors = {};
   // Check required text fields
-  if (!title?.trim()) return { field: "title", message: "Title is required" };
+  if (!title?.trim())
+    errors.title = new DomainError("TITLE_REQUIRED", "Title is required");
   if (!description?.trim())
-    return { field: "description", message: "Description is required" };
-  if (!location?.trim())
-    return { field: "location", message: "Location is required" };
-
+    errors.description = new DomainError(
+      "DESCRIPTION_REQUIRED",
+      "Description is required",
+    );
+  if (!location?.trim()) errors.location = new DomainError(
+    "LOCATION_REQUIRED",
+    "Location is required",
+  );
   // Check required date fields
-  if (!startTime)
-    return { field: "startTime", message: "Start time is required" };
-  if (!endTime) return { field: "endTime", message: "End time is required" };
-
-  // Check that at least one category is selected
+  if (!startTime) errors.startTime = new DomainError(
+    "START_TIME_REQUIRED",
+    "Start time is required",
+  );
+  if (!endTime) errors.endTime = new DomainError("END_TIME_REQUIRED", "End time is required");
   if (!Array.isArray(categories) || categories.length === 0)
-    return {
-      field: "categories",
-      message: "At least one category is required",
-    };
+    errors.categories = new DomainError(
+      "CATEGORIES_REQUIRED",
+      "At least one category is required",
+    );
   //   const now = new Date();
 
   // Convert start/end times to Date objects for comparison
   const start = new Date(startTime);
   const end = new Date(endTime);
 
+  const startValid = !isNaN(start.getTime());
+  const endValid = !isNaN(end.getTime());
+
+  if (!errors.startTime && !errors.endTime) {
+    if (startValid && endValid && start > end)
+    errors.startTime = new DomainError(
+      "START_AFTER_END",
+      "Start time must be before end time",
+    );}
   //   if (start < now)
   //     return { field: "startTime", message: "Start time must be in the future" };
   // Ensure start time is before end time
-  if (start > end) {
-    return {
-      field: "startTime",
-      message: "Start time must be before end time",
-    };
-  }
 
   //   if (end < now)
   //     return {
@@ -64,5 +76,5 @@ export function validateEvent({
   //       message: "end time must be in the future",
   //     };
   // If all checks pass, return null (valid event)
-  return null; // ✅ valid
+  return Object.keys(errors).length > 0 ? errors : null; // ✅ valid
 }

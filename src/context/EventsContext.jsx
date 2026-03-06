@@ -25,8 +25,10 @@ import {
 import { fetchEvents, fetchCategories, fetchUsers } from "@/api/events";
 import { normalizeEvent } from "@/utils/normalizeEvent";
 import { messages } from "@/utils/messages";
+import { normalizeError } from "@/utils/normalizeError";
+import { DomainError } from "@/utils/domainError";
 
-// Create context object (null default to enforce provider usage)
+// Create context object (null default to enforce provider usage) This is the first step
 const EventsContext = createContext(null);
 
 // Initial state for the reducer
@@ -74,7 +76,7 @@ function reducer(state, action) {
         events: state.events.filter((e) => e.id !== action.payload),
       };
     case ACTIONS.ERROR:
-      return { ...state, error: action.payload, loading: false };
+      return { ...state, error: normalizeError(action.payload), loading: false };
     default:
       return state;
   }
@@ -110,7 +112,7 @@ export const EventsProvider = ({ children, initialEvents = [] }) => {
         });
       } catch (err) {
         if (cancelled) return;
-        dispatch({ type: ACTIONS.ERROR, payload: err });
+        dispatch({ type: ACTIONS.ERROR, payload: normalizeError(err), });
       }
     }
     load();
@@ -159,7 +161,8 @@ export const EventsProvider = ({ children, initialEvents = [] }) => {
     const res = await submitWithToaster(promiseFactory, message);
     const id = getId(res);
     if (id === null) {
-      throw new Error(
+      throw new DomainError(
+        "REMOVE_ID_MISSING",
         "Could not determine id to remove from response. Pass getId function."
       );
     }

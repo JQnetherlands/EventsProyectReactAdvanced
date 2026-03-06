@@ -19,7 +19,6 @@ import { useEventForm } from "@/hooks/useEventForm";
 import { useEvents } from "@/context/EventsContext";
 import { BaseDialog } from "./BaseDialog";
 import { showToast } from "@/utils/showToast";
-import { messages } from "@/utils/messages";
 import { useDialogConfig } from "@/hooks/useDialogConfig";
 
 export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
@@ -29,6 +28,7 @@ export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
   const {
     form,
     handleChange,
+    handleImageUpload,
     fieldErrors,
     validate,
     resetForm,
@@ -43,14 +43,8 @@ export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
    * - Resets form and closes dialog if successful.
    */
   const handleSave = async () => {
-    const error = validate();
-    console.log("error adding event", error);
-    if (error) {
-      // Validation feedback
-      showToast.validation.required(messages.validation.labels[error.field]);
-
-      return;
-    }
+    
+    if (validate()) return;
 
     // Build payload with safe defaults
     const payload = formToPayload({
@@ -59,29 +53,37 @@ export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
       location: form.location || "Unknown", // Ensure location not empty
     });
 
-    try {
-      // Submit event via context
-      await submitAndAdd(() => createEvent(payload));
+    // Submit event via context
+    await submitAndAdd(() => createEvent(payload));
 
-      // Reset form + close dialog
-      resetForm();
-      setIsOpen(false);
-    } catch (err) {
-      console.error(err);
-    }
+    // Reset form + close dialog
+    resetForm();
+    setIsOpen(false);
+  };
+  const handleCancel = () => {
+    setIsOpen(false);
+    showToast.cancel();
   };
 
+  const handleOpenChange = (e) => {
+    if (!e.open) {
+      setIsOpen(false);
+    } else {
+      setIsOpen(true);
+    }
+  };
   // Configure dialog layout and footer buttons
   const { size, footer, title } = useDialogConfig({
     title: "Add New Event",
     onSave: handleSave,
-    onCancel: () => setIsOpen(false),
+    onCancel: handleCancel,
   });
 
   return (
     <BaseDialog
       isOpen={isOpen}
-      onOpenChange={(e) => setIsOpen(e.open)} // Keep sync with state
+      onOpenChange={handleOpenChange} // Keep sync with state
+      onClose={handleCancel}
       size={size}
       title={title}
       footer={footer}
@@ -90,6 +92,7 @@ export const AddEventDialog = ({ isOpen, setIsOpen, allCategories = [] }) => {
       <EventFormFields
         form={form}
         onChange={handleChange}
+        onImageUpload={handleImageUpload}
         allCategories={allCategories}
         fieldErrors={fieldErrors}
       />

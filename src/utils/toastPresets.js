@@ -17,8 +17,8 @@ export const toastPresets = {
 
   // Preset for errors
   error: (err) => ({
-    title: err?.title || "Error", // Use provided title or default
-    description: err?.message || String(err), // Use provided message or convert error to string
+    title: "Error", // Use provided title or default
+    description: err.message , // Use provided message or convert error to string
     type: "error",
     closable: true,
   }),
@@ -31,7 +31,7 @@ export const toastPresets = {
       description: `${field} is required`,
       type: "error",
       closable: true,
-    }),
+    }), //ChatGpt2 this get trigger when the time is future the end time, I am trying to resolve this bug 
     // Custom validation error
     custom: (msg) => ({
       title: "Input error",

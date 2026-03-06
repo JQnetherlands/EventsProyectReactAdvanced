@@ -17,7 +17,6 @@
  *    allCategories={categories}
  * />
  */
-import { messages } from "@/utils/messages";
 import { updateEvent } from "@/api/events";
 import { EventFormFields } from "./EventFormFields";
 import { useEvents } from "@/context/EventsContext";
@@ -34,7 +33,7 @@ export const EditEventDialog = ({
   const { submitAndUpdate } = useEvents();
 
   // Custom form hook (populates form with event data)
-  const { form, handleChange, fieldErrors, validate, formToPayload } =
+  const { form, handleChange, handleImageUpload,fieldErrors, validate, formToPayload } =
     useEventForm(event);
 
   /**
@@ -45,32 +44,38 @@ export const EditEventDialog = ({
    * 4. Close dialog on success.
    */
   const handleSave = async () => {
-    const error = validate();
-    if (error) {
-      showToast.validation.required(messages.validation.labels[error.field]);
-
-      return;
-    }
+    if (validate()) return;
 
     const payload = formToPayload();
-    try {
+
       await submitAndUpdate(() => updateEvent(event.id, payload));
       setIsOpen(false); // close dialog on success
-    } catch (err) {
-      console.error(err);
-    }
+   
   };
+  const handleCancel = () => {
+    setIsOpen(false);
+    showToast.cancel();
+  }
 
+  const handleOpenChange = (e) => {
+    if (!e.open) {
+      setIsOpen(false);
+    } else {
+      setIsOpen(true);
+    }
+     
+  }
   // Dialog configuration (size, footer buttons, title) via shared hook
   const { size, footer, title } = useDialogConfig({
     title: "Edit Event",
     onSave: handleSave,
-    onCancel: () => setIsOpen(false),
+    onCancel: handleCancel,
   });
   return (
     <BaseDialog
       isOpen={isOpen}
-      onOpenChange={(e) => setIsOpen(e.open)}
+      onOpenChange={handleOpenChange}
+      onClose={handleCancel}
       size={size}
       title={title}
       footer={footer}
@@ -79,6 +84,7 @@ export const EditEventDialog = ({
       <EventFormFields
         form={form}
         onChange={handleChange}
+        onImageUpload={handleImageUpload}
         allCategories={allCategories}
         fieldErrors={fieldErrors}
       />

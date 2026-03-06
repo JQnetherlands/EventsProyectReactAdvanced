@@ -37,7 +37,7 @@ export const filterEvents = (
     // If no categories are selected, all events pass this filter
     const matchesCategory =
       selectedCategories.length === 0 ||
-      event.categoryIds.some((id) => selectedCategories.includes(Number(id)));
+      selectedCategories.every((id) => event.categoryIds.includes(Number(id)));
 
     // Event must satisfy both search and category filters
     return matchesSearch && matchesCategory;

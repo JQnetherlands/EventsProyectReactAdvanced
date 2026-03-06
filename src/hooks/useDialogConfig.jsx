@@ -32,7 +32,6 @@
  * <BaseDialog size={size} title={title} footer={footer} />
  */
 import { useBreakpointValue, Button } from "@chakra-ui/react";
-import { showToast } from "@/utils/showToast";
 export function useDialogConfig({
   title,
   onSave,
@@ -51,10 +50,7 @@ export function useDialogConfig({
       {/* Cancel button - triggers toast + optional onCancel callback */}
       <Button
         variant="ghost"
-        onClick={() => {
-          showToast.cancel(); // Inform user that changes were cancelled
-          onCancel?.(); // Execute custom cancel handler if provided
-        }}
+        onClick={onCancel}
       >
         {cancelLabel}
       </Button>

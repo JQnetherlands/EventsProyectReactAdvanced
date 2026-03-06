@@ -49,7 +49,8 @@ export const EventPage = () => {
   // Find the current event by ID (string cast for safety)
   const event = events.find((e) => String(e.id) === String(eventId));
   if (!event) {
-    return <Text>Event no found</Text>;
+    navigate("/")
+    return null;
   }
 
   // State to toggle dialogs
@@ -147,8 +148,15 @@ export const EventPage = () => {
         </Text>
       )}
       {/* Action buttons: Edit / Delete */}
-      <Box display={"flex"} gap={2}>
+      <Box
+        display={"flex"}
+        gap={2}
+        flexDirection={{ base: "column", sm: "row" }}
+        w={"full"}
+        justifyContent={{ base: "stretch", sm: "center" }}
+      >
         <Button
+          w={{ base: "full", sm: "auto" }}
           size={{ base: "sm", md: "md", lg: "lg" }}
           colorPalette={"teal"}
           onClick={() => setIsEditOpen(true)}
@@ -157,6 +165,7 @@ export const EventPage = () => {
         </Button>
 
         <Button
+          w={{ base: "full", sm: "auto" }}
           size={{ base: "sm", md: "md", lg: "lg" }}
           colorPalette={"red"}
           onClick={() => setIsDeleteOpen(true)}
@@ -179,7 +188,7 @@ export const EventPage = () => {
         isOpen={isDeleteOpen}
         setIsOpen={setIsDeleteOpen}
         title="Delete Event"
-        description={`Are you sure want to delete "${event.title}" This ation cannot be undone.`}
+        description={`Are you sure want to delete "${event.title}" This action cannot be undone.`}
         onConfirm={handleDelete}
         confirmLabel="Delete"
         confirmColor="red"

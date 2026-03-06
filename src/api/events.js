@@ -8,6 +8,8 @@
  * - Uses the Fetch API to make HTTP requests to the backend (default: http://localhost:3000).
  */
 
+import { DomainError } from "@/utils/domainError";
+
 const BASE = "http://localhost:3000";
 
 /**
@@ -29,13 +31,16 @@ async function handleRes(res) {
     data = text;
   }
 
-    if (!res.ok) {
-      // Construct a helpful error object
-      const err = new Error(data?.message || res.statusText || "API error");
-      err.status = res.status;
-      err.data = data;
-      throw err; // Caller must handle this
-    }
+  if (!res.ok) {
+    throw new DomainError(
+      data?.code || "API_ERROR",
+      data?.message || res.statusText || "API error",
+      {
+        status: res.status,
+        data,
+      },
+    );
+  }
   return data;
 }
 
@@ -44,8 +49,14 @@ async function handleRes(res) {
  * GET /events
  */
 export async function fetchEvents() {
-  const res = await fetch(`${BASE}/events`);
-  return handleRes(res);
+  try {
+    const res = await fetch(`${BASE}/events`);
+    return handleRes(res);
+  } catch (err) {
+    throw new DomainError("NETWORK_ERROR", "Failed to connect to server", {
+      original: err,
+    });
+  }
 }
 
 /**

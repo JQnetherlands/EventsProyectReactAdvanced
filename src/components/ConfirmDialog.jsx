@@ -24,6 +24,7 @@
 import { Text } from "@chakra-ui/react";
 import { BaseDialog } from "./BaseDialog";
 import { useDialogConfig } from "@/hooks/useDialogConfig";
+import { showToast } from "@/utils/showToast";
 
 export const ConfirmDialog = ({
   isOpen, // Boolean: whether the dialog is open
@@ -39,20 +40,28 @@ export const ConfirmDialog = ({
     await onConfirm();
     setIsOpen(false);
   };
-
+  const handleCancel = () => {
+    setIsOpen(false);
+    showToast.cancel();
+  }
+  const handleOpenChange = (e) => {
+    if (!e.open) handleCancel();
+    else setIsOpen(true)
+  }
   // Hook generates dialog config: title, footer with buttons
   const { size, footer } = useDialogConfig({
     title,
     onSave: handleConfirm, // confirm action
-    onCancel: () => setIsOpen(false), // cancel closes dialog
+    onCancel: handleCancel, // cancel closes dialog
     saveLabel: confirmLabel, // confirm button label
     saveColor: confirmColor, // confirm button color
-    cancelLabel: "Cancer", // cancel button label
+    cancelLabel: "Cancel", // cancel button label
   });
   return (
     <BaseDialog
       isOpen={isOpen}
-      onOpenChange={(e) => setIsOpen(e.open)}
+      onOpenChange={handleOpenChange}
+      onClose={handleCancel}
       size={size}
       title={title}
       footer={footer}

@@ -15,14 +15,15 @@ export const showToast = {
   cancel: () => toaster.create(toastPresets.cancel),
 
   // Display an error toast, optionally passing an error object/message
-  error: (err) => toaster.create(toastPresets.error(err)),
+  error: (err) => {
+    toaster.create(toastPresets.error(err))
+  },
 
   // Validation-specific toast messages
   validation: {
     // Show required field validation error
     required: (fieldKey) =>
       toaster.create(toastPresets.validation.required(fieldKey)),
-
     // Show custom validation error message
     custom: (msg) => toaster.create(toastPresets.validation.custom(msg)),
   },
