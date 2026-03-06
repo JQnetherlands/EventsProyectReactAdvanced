@@ -125,19 +125,6 @@
       "endTime": "2023-03-19T21:00:00.000Z"
     },
     {
-      "title": "Hello",
-      "description": "w",
-      "startTime": "2025-10-01T11:38:00.000Z",
-      "endTime": "2025-10-01T11:46:00.000Z",
-      "categoryIds": [
-        2
-      ],
-      "image": "/src/images/pexels-marcin-dampc-807808-1684187.jpg",
-      "location": "w",
-      "createdBy": 1,
-      "id": 11
-    },
-    {
       "title": "horse riding",
       "description": "riding",
       "startTime": "2025-10-01T14:00:00.000Z",
@@ -151,45 +138,6 @@
       "location": "gelderland",
       "createdBy": 1,
       "id": 12
-    },
-    {
-      "title": "hi",
-      "description": "hi",
-      "startTime": "2025-12-03T13:15:00.000Z",
-      "endTime": "2025-12-03T13:18:00.000Z",
-      "categoryIds": [
-        1
-      ],
-      "image": "/src/images/pexels-marcin-dampc-807808-1684187.jpg",
-      "location": "werk",
-      "createdBy": 1,
-      "id": 14
-    },
-    {
-      "title": "q",
-      "description": "q",
-      "startTime": "2026-03-02T14:46:00.000Z",
-      "endTime": "2026-03-02T14:50:00.000Z",
-      "categoryIds": [
-        2
-      ],
-      "image": "/src/images/pexels-marcin-dampc-807808-1684187.jpg",
-      "location": "q",
-      "createdBy": 1,
-      "id": 15
-    },
-    {
-      "createdBy": 1,
-      "image": "/src/images/pexels-marcin-dampc-807808-1684187.jpg",
-      "location": "q",
-      "title": "q",
-      "description": "q",
-      "startTime": "2026-03-03T16:29:00.000Z",
-      "endTime": "2026-03-03T16:33:00.000Z",
-      "categoryIds": [
-        1
-      ],
-      "id": 16
     }
   ],
   "categories": [
