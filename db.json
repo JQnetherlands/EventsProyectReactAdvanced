@@ -16,19 +16,7 @@
       "image": "https://wincacademy.github.io/webpages/media/person9.jpeg"
     }
   ],
-  "events": [
-    {
-      "title": "Laser Tag mania",
-      "description": "Let's play laser tag!",
-      "startTime": "2023-04-06T17:48:00.000Z",
-      "endTime": "2023-04-06T18:49:00.000Z",
-      "categoryIds": [2, 3, 1],
-      "image": "https://wincacademy.github.io/webpages/media/lasertag.jpg",
-      "location": "Blinded by the Lights Laser Tag, 15 Main St.",
-      "createdBy": 1,
-      "id": 2
-    }
-  ],
+  "events": [],
   "categories": [
     {
       "name": "sports",
