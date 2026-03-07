@@ -166,7 +166,7 @@ export const EventsPage = () => {
     >
       {/* Page title */}
       <Heading size="lg" textAlign="center" my={2}>
-        List of events React
+        List of events 
       </Heading>
 
       {/* Button to open AddEventDialog */}
