@@ -5,8 +5,10 @@ import { useTheme } from "next-themes";
 export function ColorModeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => setMounted(true), []);
-  const current = theme ?? resolvedTheme
+
+  const current = theme ?? resolvedTheme;
   const isActive = (mode) => current === mode;
   if (!mounted) return null;
 

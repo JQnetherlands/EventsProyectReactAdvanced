@@ -10,7 +10,7 @@
 
 import { DomainError } from "@/utils/domainError";
 
-const BASE = "https://eventsdatabase-62ee52f178e7.herokuapp.com";
+const BASE = "https://events-back-end.onrender.com";
 
 /**
  * Handle API responses consistently.
