@@ -6,7 +6,7 @@ import { createBrowserRouter, RouterProvider} from "react-router-dom";
 import { Root } from "./components/Root";
 import { Provider } from "./components/UI/provider";
 import { EventsProvider } from "./context/EventsContext";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "./components/UI/toaster";
 
 // function EventPageWrapper() {
 //   const navigate = useNavigate();
