@@ -10,7 +10,7 @@
 
 import { DomainError } from "@/utils/domainError";
 
-const BASE = "http://localhost:3000";
+const BASE = "https://eventsdatabase-62ee52f178e7.herokuapp.com";
 
 /**
  * Handle API responses consistently.
