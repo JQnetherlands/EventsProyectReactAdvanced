@@ -9,8 +9,10 @@
  */
 
 import { DomainError } from "@/utils/domainError";
+import { getAuthHeaders } from "@/utils/auth";
 
 const BASE = "https://events-back-end.onrender.com";
+
 
 /**
  * Handle API responses consistently.
@@ -94,7 +96,7 @@ export async function fetchUsers() {
 export async function createEvent(event) {
   const res = await fetch(`${BASE}/events`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(event),
   });
   return handleRes(res);
@@ -109,7 +111,7 @@ export async function createEvent(event) {
 export async function updateEvent(id, event) {
   const res = await fetch(`${BASE}/events/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(event),
   });
 
@@ -124,6 +126,7 @@ export async function updateEvent(id, event) {
 export async function deleteEvent(id) {
   const res = await fetch(`${BASE}/events/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
   return handleRes(res);
 }

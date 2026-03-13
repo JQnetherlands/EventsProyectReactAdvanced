@@ -52,7 +52,7 @@ export const EventPage = () => {
     navigate("/")
     return null;
   }
-
+  
   // State to toggle dialogs
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);

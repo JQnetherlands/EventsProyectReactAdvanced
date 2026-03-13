@@ -106,6 +106,7 @@ export const EventsProvider = ({ children, initialEvents = [] }) => {
         ]);
         if (cancelled) return;
         // Store raw events, categories, and users in state
+        console.log(users)
         dispatch({
           type: ACTIONS.SET_ALL,
           payload: { events, categories, users },
